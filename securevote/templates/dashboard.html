@@ -7,6 +7,9 @@
 <ul>
     {% for capability in capabilities %}<li>{{ capability }}</li>{% endfor %}
 </ul>
+<nav aria-label="Role pages">
+    {% for label, url in dashboard_links %}<p><a href="{{ url }}">{{ label }}</a></p>{% endfor %}
+</nav>
 <form action="/logout" method="post">
     <button type="submit">Log out</button>
 </form>

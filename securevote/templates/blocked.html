@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Blocked IPs and locked users | SecureVote{% endblock %}
+{% block content %}
+<h1>Blocked IPs</h1>
+<table>
+    <thead><tr><th>IP</th><th>Reason</th><th>Blocked until</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for item in ips %}
+            <tr>
+                <td>{{ item.ip }}</td><td>{{ item.reason }}</td><td>{{ item.blocked_until }}</td>
+                <td><form action="/admin/unblock-ip" method="post"><input type="hidden" name="ip" value="{{ item.ip }}"><button type="submit">Unblock</button></form></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4">No blocked IPs.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h1>Locked users</h1>
+<table>
+    <thead><tr><th>Student ID</th><th>Role</th><th>Failed attempts</th><th>Locked until</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for item in users %}
+            <tr>
+                <td>{{ item.student_id }}</td><td>{{ item.role }}</td><td>{{ item.failed_attempts }}</td><td>{{ item.locked_until }}</td>
+                <td><form action="/admin/unlock-user" method="post"><input type="hidden" name="user_id" value="{{ item.id }}"><button type="submit">Unlock</button></form></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5">No locked users.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

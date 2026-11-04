@@ -1,19 +1,49 @@
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.exception_handlers import http_exception_handler
-from fastapi.responses import JSONResponse
+from fastapi.responses import PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from audit import get_client, log_event
+from auth import decode_token
+from config import IDS_EXEMPT_LOCALHOST
 from database import get_db, init_db
+from ids import check_rate_limit, is_ip_blocked, scan_input
 from routes.auth_routes import router as auth_router
+from routes.admin import router as admin_router
 from routes.dashboards import router as dashboards_router
+from routes.officer import router as officer_router
+from routes.voter import router as voter_router
 
-app = FastAPI(title="SecureVote")
+app = FastAPI(title="SecureVote", dependencies=[Depends(scan_input)])
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 app.include_router(auth_router)
 app.include_router(dashboards_router)
+app.include_router(officer_router)
+app.include_router(voter_router)
+app.include_router(admin_router)
+
+
+@app.middleware("http")
+async def security_middleware(request: Request, call_next):
+    ip, user_agent = get_client(request)
+    exempt_local = IDS_EXEMPT_LOCALHOST and ip == "127.0.0.1"
+
+    if not exempt_local and is_ip_blocked(ip):
+        log_event("HTTP_403", "WARN", None, None, ip, user_agent, "Blocked IP request")
+        response = PlainTextResponse("Your IP is temporarily blocked", status_code=403)
+    elif not exempt_local and check_rate_limit(ip):
+        response = PlainTextResponse("Too many requests", status_code=429)
+    else:
+        response = await call_next(request)
+
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Content-Security-Policy"] = "default-src 'self'"
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.exception_handler(StarletteHTTPException)
@@ -24,6 +54,18 @@ async def http_error_handler(request: Request, exc: StarletteHTTPException):
         404: "Page not found.",
     }
     if exc.status_code in messages:
+        if exc.status_code in {401, 403}:
+            ip, user_agent = get_client(request)
+            claims = decode_token(request.cookies.get("access_token", ""))
+            log_event(
+                f"HTTP_{exc.status_code}",
+                "WARN",
+                claims.get("sub") if claims else None,
+                claims.get("role") if claims else None,
+                ip,
+                user_agent,
+                request.url.path,
+            )
         return templates.TemplateResponse(
             request=request,
             name="error.html",

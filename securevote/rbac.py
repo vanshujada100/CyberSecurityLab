@@ -2,6 +2,7 @@ from fastapi import HTTPException, Request
 
 from auth import decode_token
 from database import get_db
+from ids import record_privilege_violation
 
 
 def get_current_user(request: Request):
@@ -33,7 +34,7 @@ def require_role(*allowed_roles):
     def role_dependency(request: Request):
         user = get_current_user(request)
         if user["role"] not in allowed_roles:
-            # PHASE 4 HOOK: privilege probing detection will go here
+            record_privilege_violation(request, user)
             raise HTTPException(status_code=403, detail="Access denied.")
         return user
 

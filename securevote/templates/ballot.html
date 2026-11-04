@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Vote | SecureVote{% endblock %}
+{% block content %}
+<h1>Vote</h1>
+{% if has_voted %}
+    <p>You have already voted.</p>
+{% elif state == "OPEN" %}
+    {% if candidates %}
+        <form action="/vote" method="post">
+            <fieldset>
+                <legend>Select one candidate</legend>
+                {% for candidate in candidates %}
+                    <label>
+                        <input type="radio" name="candidate_id" value="{{ candidate.id }}" required>
+                        {{ candidate.name }} | {{ candidate.position }}{% if candidate.description %} | {{ candidate.description }}{% endif %}
+                    </label>
+                {% endfor %}
+            </fieldset>
+            <button type="submit">Submit ballot</button>
+        </form>
+    {% else %}
+        <p>No candidates are available.</p>
+    {% endif %}
+{% else %}
+    <p>The election is not open.</p>
+{% endif %}
+{% endblock %}

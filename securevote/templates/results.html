@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Results | SecureVote{% endblock %}
+{% block content %}
+<h1>Election results</h1>
+<table>
+    <thead><tr><th>Position</th><th>Candidate</th><th>Votes</th></tr></thead>
+    <tbody>
+        {% for row in tally %}<tr><td>{{ row.position }}</td><td>{{ row.name }}</td><td>{{ row.votes }}</td></tr>{% endfor %}
+    </tbody>
+</table>
+{% endblock %}

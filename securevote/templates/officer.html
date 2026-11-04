@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Officer panel | SecureVote{% endblock %}
+{% block content %}
+<h1>Officer panel</h1>
+<p>Election state: {{ state }}</p>
+<p>Turnout: {{ voted }} / {{ total }}</p>
+
+<h2>Candidates</h2>
+<ul>
+    {% for candidate in candidates %}
+        <li>{{ candidate.name }} | {{ candidate.position }}{% if candidate.description %} | {{ candidate.description }}{% endif %}</li>
+    {% else %}
+        <li>No candidates.</li>
+    {% endfor %}
+</ul>
+
+{% if state == "NOT_STARTED" %}
+    <h2>Add candidate</h2>
+    <form action="/officer/candidates" method="post">
+        <label for="name">Name</label><input id="name" name="name" required>
+        <label for="position">Position</label><input id="position" name="position" required>
+        <label for="description">Description</label><input id="description" name="description">
+        <button type="submit">Add candidate</button>
+    </form>
+    <form action="/officer/election/open" method="post">
+        <button type="submit">Open election</button>
+    </form>
+{% elif state == "OPEN" %}
+    <form action="/officer/election/close" method="post">
+        <button type="submit">Close election</button>
+    </form>
+{% endif %}
+{% endblock %}

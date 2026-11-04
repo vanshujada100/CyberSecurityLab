@@ -26,10 +26,24 @@ def dashboard(user=Depends(get_current_user)):
 
 
 def _render_dashboard(request, user, capabilities):
+    links_by_role = {
+        "voter": [("Vote", "/vote")],
+        "officer": [("Officer panel", "/officer/panel")],
+        "admin": [
+            ("Results", "/admin/results"),
+            ("Alerts", "/admin/alerts"),
+            ("Blocked IPs and locked users", "/admin/blocked"),
+        ],
+        "auditor": [],
+    }
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
-        context={"user": user, "capabilities": capabilities},
+        context={
+            "user": user,
+            "capabilities": capabilities,
+            "dashboard_links": links_by_role.get(user["role"], []),
+        },
     )
 
 

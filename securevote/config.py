@@ -8,6 +8,8 @@ DB_PATH = os.getenv("DB_PATH", "securevote.db")
 SECRET_KEY = os.getenv("SECRET_KEY")
 FERNET_KEY = os.getenv("FERNET_KEY")
 COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() in {"1", "true", "yes"}
+# Keep localhost enforcement enabled by default so the lab can demonstrate IP blocking.
+IDS_EXEMPT_LOCALHOST = os.getenv("IDS_EXEMPT_LOCALHOST", "false").lower() in {"1", "true", "yes"}
 
 # Set COOKIE_SECURE=True whenever cookies are sent over HTTPS.
 

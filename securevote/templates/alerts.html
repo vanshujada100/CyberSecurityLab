@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}IDS alerts | SecureVote{% endblock %}
+{% block content %}
+<h1>IDS alerts</h1>
+<table>
+    <thead><tr><th>Time</th><th>Rule</th><th>Severity</th><th>IP</th><th>User</th><th>Details</th><th>Status</th></tr></thead>
+    <tbody>
+        {% for alert in alerts %}
+            <tr><td>{{ alert.ts }}</td><td>{{ alert.rule }}</td><td>{{ alert.severity }}</td><td>{{ alert.ip }}</td><td>{{ alert.user_id }}</td><td>{{ alert.details }}</td><td>{{ alert.status }}</td></tr>
+        {% else %}
+            <tr><td colspan="7">No alerts.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

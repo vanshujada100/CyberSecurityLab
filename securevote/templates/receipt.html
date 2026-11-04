@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Ballot receipt | SecureVote{% endblock %}
+{% block content %}
+<h1>Ballot receipt</h1>
+{% if receipt %}
+    <p>Your receipt code:</p>
+    <p><strong>{{ receipt }}</strong></p>
+    <p>Save this code. It confirms the ballot is in the ballot box; it does not identify your selection.</p>
+{% elif found %}
+    <p>Ballot found in the ballot box.</p>
+{% else %}
+    <p>Not found.</p>
+{% endif %}
+<form action="/verify-receipt" method="post">
+    <label for="receipt">Verify a receipt</label>
+    <input id="receipt" name="receipt" type="text" autocomplete="off" required>
+    <button type="submit">Check receipt</button>
+</form>
+{% endblock %}
