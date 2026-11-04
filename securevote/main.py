@@ -2,7 +2,8 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exception_handlers import http_exception_handler
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -20,6 +21,11 @@ from routes.voter import router as voter_router
 
 app = FastAPI(title="SecureVote", dependencies=[Depends(scan_input)])
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+app.mount(
+    "/static",
+    StaticFiles(directory=str(Path(__file__).parent / "static")),
+    name="static",
+)
 app.include_router(auth_router)
 app.include_router(dashboards_router)
 app.include_router(officer_router)
@@ -88,6 +94,11 @@ async def http_error_handler(request: Request, exc: StarletteHTTPException):
 @app.on_event("startup")
 def startup():
     init_db()
+
+
+@app.get("/", include_in_schema=False)
+def home():
+    return RedirectResponse(url="/login", status_code=303)
 
 
 @app.get("/health")

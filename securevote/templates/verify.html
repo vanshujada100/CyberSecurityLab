@@ -7,9 +7,9 @@
     <section>
         <h2>{{ check.name }}</h2>
         {% if check.ok %}
-            <p><font color="green"><strong>PASS</strong></font></p>
+            <p class="check-pass"><strong>PASS</strong></p>
         {% else %}
-            <p><font color="red"><strong>FAIL</strong></font></p>
+            <p class="check-fail"><strong>FAIL</strong></p>
         {% endif %}
         {% if check.checked is not none %}<p>Records checked: {{ check.checked }}</p>{% endif %}
         {% if check.broken_at is not none %}<p>Broken record ID: {{ check.broken_at }}</p>{% endif %}

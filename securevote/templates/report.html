@@ -13,7 +13,7 @@
         {% for name, result in checks.items() %}
             <tr>
                 <td>{{ name }}</td>
-                <td>{% if result.ok %}<font color="green">PASS</font>{% else %}<font color="red">FAIL</font>{% endif %}</td>
+                <td>{% if result.ok %}<span class="check-pass">PASS</span>{% else %}<span class="check-fail">FAIL</span>{% endif %}</td>
                 <td>{% if result.broken_at is defined and result.broken_at %}Broken record: {{ result.broken_at }} | {{ result.reason }}{% elif result.checked is defined %}{{ result.checked }} records checked | {{ result.reason }}{% else %}Ballots: {{ result.ballots }} | Voter status: {{ result.voted }}{% endif %}</td>
             </tr>
         {% endfor %}
