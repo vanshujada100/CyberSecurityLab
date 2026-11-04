@@ -12,6 +12,9 @@ from database import get_db
 FAILED_AUTH_LIMIT = 5
 FAILED_AUTH_WINDOW_MINUTES = 10
 ACCOUNT_LOCK_MINUTES = 15
+CREDENTIAL_STUFFING_ACCOUNT_LIMIT = 3
+CREDENTIAL_STUFFING_WINDOW_MINUTES = 5
+CREDENTIAL_STUFFING_BLOCK_MINUTES = 5
 PRIVILEGE_LIMIT = 3
 PRIVILEGE_WINDOW_MINUTES = 5
 REQUEST_LIMIT = 60
@@ -76,6 +79,8 @@ def raise_alert(rule, severity, ip, user_id, details):
 def record_auth_failure(event_type, user_id, role, ip, user_agent, details):
     actor_id = str(user_id) if user_id is not None else None
     log_event(event_type, "WARN", actor_id, role, ip, user_agent, details)
+    if event_type == "LOGIN_FAILED":
+        check_credential_stuffing(ip, user_id)
     if user_id is None:
         return False
 
@@ -194,6 +199,33 @@ def block_ip(ip, reason, minutes):
         connection.commit()
     finally:
         connection.close()
+
+
+def check_credential_stuffing(ip, user_id):
+    if not ip or ip == "unknown":
+        return
+    window_start = (
+        utc_now() - timedelta(minutes=CREDENTIAL_STUFFING_WINDOW_MINUTES)
+    ).isoformat()
+    connection = get_db()
+    try:
+        account_count = connection.execute(
+            """SELECT COUNT(DISTINCT actor_id) FROM audit_log
+               WHERE event_type = ? AND ip = ? AND actor_id IS NOT NULL AND ts >= ?""",
+            ("LOGIN_FAILED", ip, window_start),
+        ).fetchone()[0]
+    finally:
+        connection.close()
+
+    if account_count >= CREDENTIAL_STUFFING_ACCOUNT_LIMIT and not is_ip_blocked(ip):
+        block_ip(ip, "CREDENTIAL_STUFFING", CREDENTIAL_STUFFING_BLOCK_MINUTES)
+        raise_alert(
+            "CREDENTIAL_STUFFING",
+            "HIGH",
+            ip,
+            user_id,
+            f"Failed logins against {account_count} accounts within {CREDENTIAL_STUFFING_WINDOW_MINUTES} minutes",
+        )
 
 
 def check_rate_limit(ip):

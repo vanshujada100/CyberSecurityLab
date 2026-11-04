@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block title %}Dashboard | SecureVote{% endblock %}
 {% block content %}
-<h1>{{ user.name }}</h1>
-<p>Role: {{ user.role }}</p>
-<h2>Available in later phases</h2>
+<p class="eyebrow">SECUREVOTE WORKSPACE</p>
+<h1>Welcome, {{ user.name }}</h1>
+<p class="role-label">Signed in as <strong>{{ user.role }}</strong></p>
+<h2>Your access</h2>
 <ul>
     {% for capability in capabilities %}<li>{{ capability }}</li>{% endfor %}
 </ul>

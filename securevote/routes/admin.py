@@ -6,7 +6,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 
 from audit import get_client, log_event
-from crypto_utils import decrypt_ballot
+from crypto_utils import tally_ballots
 from database import get_db
 from rbac import require_role
 
@@ -35,21 +35,7 @@ def results(request: Request, user=Depends(require_role("admin"))):
             )
             raise HTTPException(status_code=403, detail="Results are available after the election closes.")
 
-        counts = {}
-        candidates = connection.execute(
-            "SELECT id, name, position FROM candidates ORDER BY position, name"
-        ).fetchall()
-        for candidate in candidates:
-            counts[candidate["id"]] = 0
-        ballots = connection.execute("SELECT ciphertext FROM ballots").fetchall()
-        for ballot in ballots:
-            candidate_id = decrypt_ballot(ballot["ciphertext"])
-            if candidate_id in counts:
-                counts[candidate_id] += 1
-        tally = [
-            {"name": candidate["name"], "position": candidate["position"], "votes": counts[candidate["id"]]}
-            for candidate in candidates
-        ]
+        tally = tally_ballots(connection)
     finally:
         connection.close()
 
@@ -79,6 +65,40 @@ def alerts(request: Request, user=Depends(require_role("admin"))):
         request=request,
         name="alerts.html",
         context={"alerts": rows},
+    )
+
+
+@router.get("/admin/users")
+def users(request: Request, admin=Depends(require_role("admin"))):
+    connection = get_db()
+    try:
+        rows = [
+            dict(row)
+            for row in connection.execute(
+                """SELECT id, student_id, name, role, failed_attempts, locked_until
+                   FROM users ORDER BY role, student_id"""
+            ).fetchall()
+        ]
+    finally:
+        connection.close()
+
+    now = datetime.now(timezone.utc)
+    for row in rows:
+        locked_until = row["locked_until"]
+        if locked_until:
+            expiry = datetime.fromisoformat(locked_until.replace("Z", "+00:00"))
+            if expiry.tzinfo is None:
+                expiry = expiry.replace(tzinfo=timezone.utc)
+            row["is_locked"] = expiry > now
+        else:
+            row["is_locked"] = False
+
+    ip, user_agent = get_client(request)
+    log_event("ADMIN_USERS_VIEWED", "INFO", str(admin["id"]), admin["role"], ip, user_agent, "User directory viewed")
+    return templates.TemplateResponse(
+        request=request,
+        name="users.html",
+        context={"users": rows},
     )
 
 

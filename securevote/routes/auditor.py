@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.templating import Jinja2Templates
 
 from audit import get_client, log_event
+from crypto_utils import tally_ballots
 from database import get_db
 from hashchain import verify_audit_chain, verify_ballot_chain, verify_ballot_count
 from ids import raise_alert
@@ -25,6 +26,27 @@ def _integrity_checks(connection):
 def _audit_context(request, user, event_type, details):
     ip, user_agent = get_client(request)
     log_event(event_type, "INFO", str(user["id"]), user["role"], ip, user_agent, details)
+
+
+@router.get("/auditor/results")
+def auditor_results(request: Request, user=Depends(require_role("auditor"))):
+    connection = get_db()
+    try:
+        election = connection.execute(
+            "SELECT state FROM election WHERE id = ?", (1,)
+        ).fetchone()
+        if election is None or election["state"] != "CLOSED":
+            raise HTTPException(status_code=403, detail="Results are available after the election closes.")
+        tally = tally_ballots(connection)
+    finally:
+        connection.close()
+
+    _audit_context(request, user, "AUDITOR_RESULTS_VIEWED", "Closed election tally viewed")
+    return templates.TemplateResponse(
+        request=request,
+        name="results.html",
+        context={"tally": tally},
+    )
 
 
 @router.get("/auditor/logs")

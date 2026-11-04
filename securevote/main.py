@@ -11,7 +11,7 @@ from audit import get_client, log_event
 from auth import decode_token
 from config import IDS_EXEMPT_LOCALHOST
 from database import get_db, init_db
-from ids import check_rate_limit, is_ip_blocked, scan_input
+from ids import check_rate_limit, is_ip_blocked, raise_alert, scan_input
 from routes.auth_routes import router as auth_router
 from routes.admin import router as admin_router
 from routes.auditor import router as auditor_router
@@ -81,6 +81,13 @@ async def http_error_handler(request: Request, exc: StarletteHTTPException):
                 ip,
                 user_agent,
                 request.url.path,
+            )
+            raise_alert(
+                "UNAUTHORIZED_ACCESS",
+                "MEDIUM",
+                ip,
+                claims.get("sub") if claims else None,
+                f"HTTP {exc.status_code} request to {request.url.path}",
             )
         return templates.TemplateResponse(
             request=request,

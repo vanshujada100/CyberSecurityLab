@@ -30,6 +30,7 @@ def _render_dashboard(request, user, capabilities):
         "voter": [("Vote", "/vote")],
         "officer": [("Officer panel", "/officer/panel")],
         "admin": [
+            ("Users", "/admin/users"),
             ("Results", "/admin/results"),
             ("Alerts", "/admin/alerts"),
             ("Blocked IPs and locked users", "/admin/blocked"),
@@ -38,6 +39,7 @@ def _render_dashboard(request, user, capabilities):
             ("Audit logs", "/auditor/logs"),
             ("Verify integrity", "/auditor/verify"),
             ("Forensic report", "/auditor/report"),
+            ("Election tally", "/auditor/results"),
         ],
     }
     return templates.TemplateResponse(
@@ -56,7 +58,10 @@ def voter_dashboard(request: Request, user=Depends(require_role("voter"))):
     return _render_dashboard(
         request,
         user,
-        ["Review election information (available in a later phase)."],
+        [
+            "Review candidates and cast one vote while the election is open.",
+            "Check whether your receipt is included without revealing your choice.",
+        ],
     )
 
 
@@ -65,7 +70,10 @@ def officer_dashboard(request: Request, user=Depends(require_role("officer"))):
     return _render_dashboard(
         request,
         user,
-        ["Manage election operations (available in a later phase)."],
+        [
+            "Add candidates before opening the poll.",
+            "Open or close the election and monitor turnout without seeing results.",
+        ],
     )
 
 
@@ -74,7 +82,10 @@ def admin_dashboard(request: Request, user=Depends(require_role("admin"))):
     return _render_dashboard(
         request,
         user,
-        ["Manage SecureVote configuration (available in a later phase)."],
+        [
+            "Review seeded accounts, unlock users, and manage blocked IPs.",
+            "Review security alerts and view the tally after the poll closes.",
+        ],
     )
 
 
@@ -83,5 +94,8 @@ def auditor_dashboard(request: Request, user=Depends(require_role("auditor"))):
     return _render_dashboard(
         request,
         user,
-        ["Review election integrity information (available in a later phase)."],
+        [
+            "Filter the audit timeline and verify ballot and audit integrity.",
+            "View the closed election tally and generate a forensic report.",
+        ],
     )

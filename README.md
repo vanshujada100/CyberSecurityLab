@@ -40,6 +40,8 @@ python -m uvicorn main:app --reload
 
 Open `http://localhost:8000`.
 
+See [SecureVote lab documentation](securevote/DOCUMENTATION.md) for the architecture, security mechanism explanations, limitations, and manual demonstration sequence.
+
 ## Test two-factor login without a phone
 
 For the lab only, generate the current six-digit code from the seeded, encrypted TOTP secret in a second terminal. Replace `voter01` with the account you are signing in as. The code changes every 30 seconds; rerun the command if it expires. This does not bypass 2FA: it generates the same time-based code an authenticator app would generate.
