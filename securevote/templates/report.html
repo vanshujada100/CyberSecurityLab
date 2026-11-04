@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Forensic report | SecureVote{% endblock %}
+{% block content %}
+<h1>Forensic report</h1>
+<p>Generated: {{ generated_at }}</p>
+<p>Election state: {{ election_state }}</p>
+<p>Integrity status: {{ integrity_status }}</p>
+
+<h2>Integrity checks</h2>
+<table>
+    <thead><tr><th>Check</th><th>Result</th><th>Details</th></tr></thead>
+    <tbody>
+        {% for name, result in checks.items() %}
+            <tr>
+                <td>{{ name }}</td>
+                <td>{% if result.ok %}<font color="green">PASS</font>{% else %}<font color="red">FAIL</font>{% endif %}</td>
+                <td>{% if result.broken_at is defined and result.broken_at %}Broken record: {{ result.broken_at }} | {{ result.reason }}{% elif result.checked is defined %}{{ result.checked }} records checked | {{ result.reason }}{% else %}Ballots: {{ result.ballots }} | Voter status: {{ result.voted }}{% endif %}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h2>Alert counts by rule</h2>
+<table><thead><tr><th>Rule</th><th>Count</th></tr></thead><tbody>
+    {% for row in alert_counts %}<tr><td>{{ row.rule }}</td><td>{{ row.total }}</td></tr>{% else %}<tr><td colspan="2">No alerts.</td></tr>{% endfor %}
+</tbody></table>
+
+<h2>Top source IPs by alerts and failed logins</h2>
+<table><thead><tr><th>IP</th><th>Count</th></tr></thead><tbody>
+    {% for row in top_sources %}<tr><td>{{ row.ip }}</td><td>{{ row.total }}</td></tr>{% else %}<tr><td colspan="2">No source activity.</td></tr>{% endfor %}
+</tbody></table>
+
+<h2>Currently locked accounts</h2>
+<table><thead><tr><th>Student ID</th><th>Role</th><th>Failed attempts</th><th>Locked until</th></tr></thead><tbody>
+    {% for row in locked_users %}<tr><td>{{ row.student_id }}</td><td>{{ row.role }}</td><td>{{ row.failed_attempts }}</td><td>{{ row.locked_until }}</td></tr>{% else %}<tr><td colspan="4">No locked accounts.</td></tr>{% endfor %}
+</tbody></table>
+
+<h2>Currently blocked IPs</h2>
+<table><thead><tr><th>IP</th><th>Reason</th><th>Blocked until</th></tr></thead><tbody>
+    {% for row in blocked_ips %}<tr><td>{{ row.ip }}</td><td>{{ row.reason }}</td><td>{{ row.blocked_until }}</td></tr>{% else %}<tr><td colspan="3">No blocked IPs.</td></tr>{% endfor %}
+</tbody></table>
+
+<h2>High and critical audit timeline</h2>
+<table><thead><tr><th>ID</th><th>Time</th><th>Event</th><th>Severity</th><th>Actor</th><th>IP</th><th>Details</th></tr></thead><tbody>
+    {% for row in high_events %}<tr><td>{{ row.id }}</td><td>{{ row.ts }}</td><td>{{ row.event_type }}</td><td>{{ row.severity }}</td><td>{{ row.actor_id }}</td><td>{{ row.ip }}</td><td>{{ row.details }}</td></tr>{% else %}<tr><td colspan="7">No high or critical events.</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

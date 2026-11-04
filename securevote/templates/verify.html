@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Integrity verification | SecureVote{% endblock %}
+{% block content %}
+<h1>Integrity verification</h1>
+<p>Election integrity status: {{ integrity_status }}</p>
+{% for check in checks %}
+    <section>
+        <h2>{{ check.name }}</h2>
+        {% if check.ok %}
+            <p><font color="green"><strong>PASS</strong></font></p>
+        {% else %}
+            <p><font color="red"><strong>FAIL</strong></font></p>
+        {% endif %}
+        {% if check.checked is not none %}<p>Records checked: {{ check.checked }}</p>{% endif %}
+        {% if check.broken_at is not none %}<p>Broken record ID: {{ check.broken_at }}</p>{% endif %}
+        {% if check.ballots is not none %}<p>Ballots: {{ check.ballots }} | Voter status: {{ check.voted }}</p>{% endif %}
+        <p>{{ check.reason }}</p>
+    </section>
+{% endfor %}
+{% endblock %}

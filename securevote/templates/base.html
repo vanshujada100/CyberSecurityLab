@@ -15,6 +15,9 @@
 </head>
 <body>
     <main>
+        {% if request.state.integrity_status == "COMPROMISED" %}
+            <table role="alert" width="100%" bgcolor="#9c2525"><tr><td><font color="#ffffff"><strong>INTEGRITY COMPROMISED</strong> | Do not trust election records until investigated.</font></td></tr></table>
+        {% endif %}
         <!-- Jinja2 autoescapes values by default; avoid |safe to reduce XSS risk. -->
         {% block content %}{% endblock %}
     </main>

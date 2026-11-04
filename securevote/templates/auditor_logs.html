@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Audit logs | SecureVote{% endblock %}
+{% block content %}
+<h1>Audit log</h1>
+<form action="/auditor/logs" method="get">
+    <label for="actor_id">Actor ID</label><input id="actor_id" name="actor_id" value="{{ filters.actor_id }}">
+    <label for="ip">IP address</label><input id="ip" name="ip" value="{{ filters.ip }}">
+    <label for="event_type">Event type</label><input id="event_type" name="event_type" value="{{ filters.event_type }}">
+    <label for="severity">Severity</label><input id="severity" name="severity" value="{{ filters.severity }}">
+    <label for="date_from">From</label><input id="date_from" name="date_from" type="date" value="{{ filters.date_from }}">
+    <label for="date_to">To</label><input id="date_to" name="date_to" type="date" value="{{ filters.date_to }}">
+    <button type="submit">Filter</button>
+</form>
+<p>Showing up to 200 newest matching events.</p>
+<table>
+    <thead><tr><th>ID</th><th>Time</th><th>Event</th><th>Severity</th><th>Actor</th><th>Role</th><th>IP</th><th>User agent</th><th>Details</th></tr></thead>
+    <tbody>
+        {% for row in logs %}
+            <tr><td>{{ row.id }}</td><td>{{ row.ts }}</td><td>{{ row.event_type }}</td><td>{{ row.severity }}</td><td>{{ row.actor_id }}</td><td>{{ row.role }}</td><td>{{ row.ip }}</td><td>{{ row.user_agent }}</td><td>{{ row.details }}</td></tr>
+        {% else %}
+            <tr><td colspan="9">No matching events.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

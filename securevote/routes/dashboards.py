@@ -34,7 +34,11 @@ def _render_dashboard(request, user, capabilities):
             ("Alerts", "/admin/alerts"),
             ("Blocked IPs and locked users", "/admin/blocked"),
         ],
-        "auditor": [],
+        "auditor": [
+            ("Audit logs", "/auditor/logs"),
+            ("Verify integrity", "/auditor/verify"),
+            ("Forensic report", "/auditor/report"),
+        ],
     }
     return templates.TemplateResponse(
         request=request,

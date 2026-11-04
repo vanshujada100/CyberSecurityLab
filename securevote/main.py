@@ -13,6 +13,7 @@ from database import get_db, init_db
 from ids import check_rate_limit, is_ip_blocked, scan_input
 from routes.auth_routes import router as auth_router
 from routes.admin import router as admin_router
+from routes.auditor import router as auditor_router
 from routes.dashboards import router as dashboards_router
 from routes.officer import router as officer_router
 from routes.voter import router as voter_router
@@ -24,6 +25,7 @@ app.include_router(dashboards_router)
 app.include_router(officer_router)
 app.include_router(voter_router)
 app.include_router(admin_router)
+app.include_router(auditor_router)
 
 
 @app.middleware("http")
@@ -37,6 +39,14 @@ async def security_middleware(request: Request, call_next):
     elif not exempt_local and check_rate_limit(ip):
         response = PlainTextResponse("Too many requests", status_code=429)
     else:
+        connection = get_db()
+        try:
+            election = connection.execute(
+                "SELECT integrity_status FROM election WHERE id = ?", (1,)
+            ).fetchone()
+            request.state.integrity_status = election["integrity_status"] if election else "UNKNOWN"
+        finally:
+            connection.close()
         response = await call_next(request)
 
     response.headers["X-Frame-Options"] = "DENY"
