@@ -40,7 +40,11 @@ python -m uvicorn main:app --reload
 
 Open `http://localhost:8000`.
 
-See [SecureVote lab documentation](securevote/DOCUMENTATION.md) for the architecture, security mechanism explanations, limitations, and manual demonstration sequence.
+## Project documents
+
+- [Security mechanisms](securevote/DOCUMENTATION.md): what each mechanism does and where to demonstrate it.
+- [Permission matrix](securevote/PERMISSION_MATRIX.md): which roles may use each page and action.
+- [Teacher test guide](securevote/TESTING_GUIDE.md): step-by-step manual security walkthrough and reset warning.
 
 ## Test two-factor login without a phone
 
@@ -54,11 +58,14 @@ source venv/bin/activate
 python -c 'from database import get_db; from auth import decrypt_totp_secret; import pyotp; db=get_db(); row=db.execute("SELECT totp_secret_enc FROM users WHERE student_id = ?", ("voter01",)).fetchone(); print(pyotp.TOTP(decrypt_totp_secret(row["totp_secret_enc"])).now()); db.close()'
 ```
 
+Replace voter01 with the username of account you want OTP for.
+
 Windows PowerShell:
 
 ```powershell
 cd securevote
-.\venv\Scripts\Activate.ps1
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+.\venv\Scripts\Activate
 python -c "from database import get_db; from auth import decrypt_totp_secret; import pyotp; db=get_db(); row=db.execute('SELECT totp_secret_enc FROM users WHERE student_id = ?', ('voter01',)).fetchone(); print(pyotp.TOTP(decrypt_totp_secret(row['totp_secret_enc'])).now()); db.close()"
 ```
 

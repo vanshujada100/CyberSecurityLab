@@ -249,6 +249,5 @@ def forensic_report(request: Request, user=Depends(require_role("auditor"))):
             "locked_users": locked_users,
             "blocked_ips": blocked_ips,
             "high_events": high_events,
-            "window_start": window_start,
         },
     )

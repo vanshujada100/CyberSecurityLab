@@ -121,7 +121,11 @@ def cast_vote(
 
 
 @router.post("/verify-receipt", response_class=HTMLResponse)
-def verify_receipt(request: Request, receipt: str = Form(...)):
+def verify_receipt(
+    request: Request,
+    receipt: str = Form(...),
+    user=Depends(require_role("voter")),
+):
     receipt_hash = hashlib.sha256(receipt.encode()).hexdigest()
     connection = get_db()
     try:
