@@ -2,7 +2,7 @@
 
 ## SecureVote setup
 
-Run the setup script once from the `securevote` directory. It creates a virtual environment, installs requirements, creates local secrets in `.env`, and seeds demo users. It does not start the server.
+Run the setup script once from the `securevote` directory. It creates a virtual environment, installs requirements, creates local secrets in `.env`, and seeds demo users. On Windows, `setup.bat` also starts the server when setup finishes.
 
 Linux:
 
@@ -15,6 +15,7 @@ Windows Command Prompt or PowerShell:
 
 ```powershell
 cd securevote
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
 .\setup.bat
 ```
 
@@ -24,14 +25,17 @@ Linux:
 
 ```bash
 cd securevote
-venv/bin/uvicorn main:app --reload
+source venv/bin/activate
+uvicorn main:app --reload
 ```
 
 Windows:
 
 ```powershell
 cd securevote
-.\venv\Scripts\python.exe -m uvicorn main:app --reload
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process
+.\venv\Scripts\Activate
+python -m uvicorn main:app --reload
 ```
 
 Open `http://localhost:8000`.
@@ -44,14 +48,16 @@ Linux:
 
 ```bash
 cd securevote
-venv/bin/python -c 'from database import get_db; from auth import decrypt_totp_secret; import pyotp; db=get_db(); row=db.execute("SELECT totp_secret_enc FROM users WHERE student_id = ?", ("voter01",)).fetchone(); print(pyotp.TOTP(decrypt_totp_secret(row["totp_secret_enc"])).now()); db.close()'
+source venv/bin/activate
+python -c 'from database import get_db; from auth import decrypt_totp_secret; import pyotp; db=get_db(); row=db.execute("SELECT totp_secret_enc FROM users WHERE student_id = ?", ("voter01",)).fetchone(); print(pyotp.TOTP(decrypt_totp_secret(row["totp_secret_enc"])).now()); db.close()'
 ```
 
 Windows PowerShell:
 
 ```powershell
 cd securevote
-.\venv\Scripts\python.exe -c "from database import get_db; from auth import decrypt_totp_secret; import pyotp; db=get_db(); row=db.execute('SELECT totp_secret_enc FROM users WHERE student_id = ?', ('voter01',)).fetchone(); print(pyotp.TOTP(decrypt_totp_secret(row['totp_secret_enc'])).now()); db.close()"
+.\venv\Scripts\Activate.ps1
+python -c "from database import get_db; from auth import decrypt_totp_secret; import pyotp; db=get_db(); row=db.execute('SELECT totp_secret_enc FROM users WHERE student_id = ?', ('voter01',)).fetchone(); print(pyotp.TOTP(decrypt_totp_secret(row['totp_secret_enc'])).now()); db.close()"
 ```
 
 ## Windows cryptography setup issue

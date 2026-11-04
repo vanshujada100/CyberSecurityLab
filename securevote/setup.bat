@@ -5,14 +5,12 @@ cd /d "%~dp0"
 py -3 -m venv venv
 if errorlevel 1 goto failed
 
-venv\Scripts\python.exe -m pip install --upgrade pip
+venv\Scripts\python.exe -m pip install -r requirements.txt
 if errorlevel 1 goto failed
 
-venv\Scripts\python.exe -m pip install --upgrade --no-cache-dir -r requirements.txt
+:: Fix DLL import issues on Windows Python 3.9
+venv\Scripts\python.exe -m pip install "bcrypt<4.0.0" "cryptography<41.0.0"
 if errorlevel 1 goto failed
-
-venv\Scripts\python.exe -c "from cryptography.fernet import Fernet; Fernet.generate_key()"
-if errorlevel 1 goto crypto_failed
 
 if not exist .env copy .env.example .env
 if errorlevel 1 goto failed
@@ -24,15 +22,10 @@ venv\Scripts\python.exe seed.py
 if errorlevel 1 goto failed
 
 echo.
-echo Setup complete. See README.md for the run command.
+echo Setup complete. Starting SecureVote at http://localhost:8000...
+venv\Scripts\uvicorn.exe main:app --reload --host 0.0.0.0 --port 8000
 exit /b 0
 
 :failed
 echo Setup failed. Check that Python 3 and the py launcher are installed.
-exit /b 1
-
-:crypto_failed
-echo The cryptography native module could not load.
-echo Use 64-bit Python 3.10 or newer and install the Microsoft Visual C++ 2015-2022 Redistributable (x64).
-echo Then remove the venv folder and run setup.bat again.
 exit /b 1
