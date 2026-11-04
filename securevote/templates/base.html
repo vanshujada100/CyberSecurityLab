@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}SecureVote{% endblock %}</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 3rem auto; padding: 0 1rem; color: #202a35; }
+        main { border: 1px solid #d5dce3; border-radius: 6px; padding: 1.5rem; }
+        label { display: block; margin: 1rem 0 .35rem; }
+        input { box-sizing: border-box; width: 100%; padding: .65rem; border: 1px solid #8794a1; border-radius: 4px; }
+        button { margin-top: 1rem; padding: .65rem 1rem; border: 0; border-radius: 4px; background: #165d52; color: white; cursor: pointer; }
+        .error { color: #9c2525; }
+    </style>
+</head>
+<body>
+    <main>
+        <!-- Jinja2 autoescapes values by default; avoid |safe to reduce XSS risk. -->
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

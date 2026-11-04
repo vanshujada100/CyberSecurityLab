@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Two-factor verification | SecureVote{% endblock %}
+{% block content %}
+<h1>Two-factor verification</h1>
+{% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+<form action="/verify-2fa" method="post">
+    <label for="code">6-digit authenticator code</label>
+    <input id="code" name="code" type="text" inputmode="numeric" pattern="[0-9]{6}" minlength="6" maxlength="6" autocomplete="one-time-code" required>
+    <button type="submit">Verify</button>
+</form>
+{% endblock %}

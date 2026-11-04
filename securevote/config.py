@@ -7,6 +7,9 @@ load_dotenv()
 DB_PATH = os.getenv("DB_PATH", "securevote.db")
 SECRET_KEY = os.getenv("SECRET_KEY")
 FERNET_KEY = os.getenv("FERNET_KEY")
+COOKIE_SECURE = os.getenv("COOKIE_SECURE", "false").lower() in {"1", "true", "yes"}
+
+# Set COOKIE_SECURE=True whenever cookies are sent over HTTPS.
 
 if not SECRET_KEY:
     raise RuntimeError(
